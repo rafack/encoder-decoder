@@ -21,7 +21,6 @@ public class Unaria {
         addValuesInHeader(resultBytes);
 
         for(byte b : content) {
-
             if(b<0){
                 aux=256+b;
             } else{
@@ -54,9 +53,10 @@ public class Unaria {
         }
 
         byte[] result = new byte[resultBytes.size()];
-
-        for (int i = 0; i < result.length; i++) {
-            result[i] = resultBytes.get(i);
+        if(result != null && result.length > 0) {
+            for (int i = 0; i < result.length; i++) {
+                result[i] = resultBytes.get(i);
+            }
         }
 
         String byteToString = new String(result, StandardCharsets.UTF_8);
