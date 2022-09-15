@@ -1,9 +1,9 @@
 package com.Encoder_Decoder;
 
 public class Delta {
-    private String content;
+    private byte[] content;
 
-    public Delta(String content) {
+    public Delta(byte[] content) {
         this.content = content;
     }
 

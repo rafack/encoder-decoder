@@ -1,9 +1,9 @@
 package com.Encoder_Decoder;
 
 public class EliasGamma {
-    private String content;
+    private byte[] content;
 
-    public EliasGamma(String content) {
+    public EliasGamma(byte[] content) {
         this.content = content;
     }
 

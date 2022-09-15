@@ -1,9 +1,9 @@
 package com.Encoder_Decoder;
 
 public class Fibonacci {
-    private String content;
+    private byte[] content;
 
-    public Fibonacci(String content) {
+    public Fibonacci(byte[] content) {
         this.content = content;
     }
 

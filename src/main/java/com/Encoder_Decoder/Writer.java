@@ -5,14 +5,14 @@ import java.io.FileWriter;
 public class Writer {
 
     private String filePath;
-    private String content;
+    private byte[] content;
     private String algorithm;
     private String k;
     private String finalContent;
 
     private String finalFilePath;
 
-    public Writer(String filePath, String content, String algorithm, String k) {
+    public Writer(String filePath, byte[] content, String algorithm, String k) {
         this.filePath = filePath;
         this.content = content;
         this.algorithm = algorithm;
@@ -84,7 +84,7 @@ public class Writer {
         finalFilePath = filePath.substring(0,filePath.length()-4) + end;
         try {
             FileWriter fw = new FileWriter(finalFilePath);
-            fw.write(content);
+            fw.write(new String(content, "UTF-8"));
             fw.close();
         } catch(Exception e) {System.out.println(e);}
         System.out.println("Done...");
