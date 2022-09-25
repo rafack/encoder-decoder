@@ -22,7 +22,7 @@ public class Writer {
     public String encode(){
         switch(algorithm){
             case "Golomb":
-                Golomb golomb = new Golomb(content, k);
+                Golomb golomb = new Golomb(content, k, content[1]);
                 finalContent = golomb.encode();
                 writeFile(".cod");
                 return finalFilePath;
@@ -53,7 +53,7 @@ public class Writer {
     public String decode(){
         switch(algorithm){
             case "Golomb":
-                Golomb golomb = new Golomb(content, k);
+                Golomb golomb = new Golomb(content, k, content[1]);
                 finalContent = golomb.decode();
                 writeFile("New.txt");
                 return finalFilePath;
