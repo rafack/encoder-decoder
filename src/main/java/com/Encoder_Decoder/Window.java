@@ -156,10 +156,8 @@ public class Window extends javax.swing.JFrame {
         function.setEnabled(false);
         run.setEnabled(false);
         try {
-            Charset charset = StandardCharsets.UTF_16;
-            byte[] jsonStringToByte = inputJson.getText().getBytes(charset);
 
-            writer = new Writer(fileChooser.getSelectedFile().getPath(), jsonStringToByte,
+            writer = new Writer(fileChooser.getSelectedFile().getPath(), inputJson.getText(),
                     algorithm.getItemAt(algorithm.getSelectedIndex()).toString(),
                     k.getText());
         } catch (Exception e) {
