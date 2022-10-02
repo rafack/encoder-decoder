@@ -8,4 +8,7 @@ public class Utils {
         }
         return binary;
     }
+    public static int calculateLog2(int value){
+        return (int) (Math.log(value) / Math.log(2));
+    }
 }

@@ -41,8 +41,14 @@ public class Writer {
                 writeFile(".cod", true);
                 return finalFilePath;
             case "Elias-Gamma":
-                //EliasGamma eliasGamma = new EliasGamma(content);
-                //finalContent = eliasGamma.encode();
+                //Header
+                header = Utils.integerToStringBinary(1, 8);
+                header += Utils.integerToStringBinary(0, 8);
+                //encode
+                EliasGamma eliasGamma = new EliasGamma(content);
+                finalContent = eliasGamma.encode();
+                //output
+                writeFile("_debug.txt", true);
                 writeFile(".cod", true);
                 return finalFilePath;
             case "Fibonacci":
@@ -75,8 +81,10 @@ public class Writer {
                 writeFile("Decoded.txt", false);
                 return finalFilePath;
             case "Elias-Gamma":
-                //EliasGamma eliasGamma = new EliasGamma(content);
-                //finalContent = eliasGamma.decode();
+                //decode
+                EliasGamma eliasGamma = new EliasGamma(content);
+                finalContent = eliasGamma.decode();
+                //output
                 writeFile("Decoded.txt", false);
                 return finalFilePath;
             case "Fibonacci":

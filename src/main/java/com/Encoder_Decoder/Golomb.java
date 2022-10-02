@@ -17,7 +17,7 @@ public class Golomb {
 
         for (char character: content.toCharArray()) {
             int restOfDivision = character % this.k;
-            int digitsToRepresentTheRest = calculateLog2(this.k);
+            int digitsToRepresentTheRest = Utils.calculateLog2(this.k);
             String restBinary = Utils.integerToStringBinary(restOfDivision, digitsToRepresentTheRest);
 
             int division = character / this.k;
@@ -32,7 +32,7 @@ public class Golomb {
     public String decode(){
         String result = "";
         boolean alreadyFoundStopBit = false;
-        int digitsOnRest = calculateLog2(this.k);
+        int digitsOnRest = Utils.calculateLog2(this.k);
         int quocient = 0;
         int index = 0;
         char[] contentCharArray = content.toCharArray();
@@ -60,9 +60,6 @@ public class Golomb {
             ++index;
         }
         return result;
-    }
-    private int calculateLog2(int value){
-        return (int) (Math.log(value) / Math.log(2));
     }
 
 }

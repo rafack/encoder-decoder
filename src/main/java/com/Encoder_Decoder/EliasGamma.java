@@ -1,151 +1,72 @@
 package com.Encoder_Decoder;
 
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.BitSet;
+import java.util.*;
 
 public class EliasGamma {
-    private byte[] content;
+    private static final byte STOP_BIT = 1;
+    private String content;
 
-    public EliasGamma(byte[] content) {
+    public EliasGamma(String content) {
         this.content = content;
     }
 
     public String encode(){
-        ArrayList<Byte> resultBytes = new ArrayList<>();
-        byte resultByte = 0;
-        int bitPosition = 0;
+        String result = "";
+        int index = 0;
+        char[] contentCharArray = content.toCharArray();
 
-        addHeaderValues(resultBytes);
+        for (char character: content.toCharArray()) {
+            if (character == 1) {
+                result += STOP_BIT;
+            } else {
+                int unaryNumber = Utils.calculateLog2(character);
+                String unaryString = createStreamOnZeros(unaryNumber);
+                int rest = (int) (character - (Math.pow(2, unaryNumber)));
 
-        for(byte b : content) {
-            // b = valor inteiro do char
-            // tamanho do byte = k
-            int byteLength = Integer.toBinaryString(b).length();
+                String restInBinary = Utils.integerToStringBinary(rest, unaryNumber);
 
-            // escreve k-1 zeros
-            for (int i = 0; i < byteLength-1; i++) {
-                if (bitPosition >= 8) {
-                    //byte is complete, add to array and start over
-                    resultBytes.add(resultByte);
-                    resultByte = 0;
-                    bitPosition = 0;
-                }
-                bitPosition++;
-            }
-            // escreve 1
-            if (bitPosition >= 8) {
-                //byte is complete, add to array and start over
-                resultBytes.add(resultByte);
-                resultByte = 0;
-                bitPosition = 0;
-            }
-            int valToShift = 7-bitPosition;
-            resultByte = (byte) (resultByte | (1<<valToShift));
-            bitPosition++;
-
-            // escreve binario(b)
-            for (int i = 0; i < byteLength; i++) {
-                if (bitPosition >= 8) {
-                    //byte is complete, add to array and start over
-                    resultBytes.add(resultByte);
-                    resultByte = 0;
-                    bitPosition = 0;
-                }
-
-                String bitsOfRest = Integer.toBinaryString(b);
-                if(bitsOfRest.charAt(i) == '1') {
-                    valToShift = 7-bitPosition;
-                    resultByte = (byte) (resultByte | (1<<valToShift));
-                }
-
-                bitPosition++;
+                String codewards = unaryString + STOP_BIT + restInBinary;
+                result += codewards;
             }
         }
-
-        //add residual bits of non complete byte
-        if (bitPosition > 0) {
-            resultBytes.add(resultByte);
-        }
-
-        byte[] result = new byte[resultBytes.size()];
-
-        for (int i = 0; i < result.length; i++) {
-            result[i] = resultBytes.get(i);
-        }
-
-        String byteToString = new String(result, StandardCharsets.UTF_8);
-        return byteToString;
+        return result;
     }
 
     public String decode(){
-        ArrayList<Byte> decoded = new ArrayList<>();
-        BitSet byteSuffix = new BitSet();
-        int count = 0;
-        boolean charCodeArea = false;
-        boolean isZero = false;
-        // count = ler(zeros)
-        for(int index = 2; index < content.length; index++) {
-            BitSet bits = BitSet.valueOf(new long[] { content[index] });
+        String result = "";
+        boolean alreadyFoundStopBit = false;
+        int prefixLength = 0;
+        int index = 0;
+        char[] contentCharArray = content.toCharArray();
 
-            for(int i = 7; i >= 0; i--){
-                if(charCodeArea) {
-                    // binario = le(n+1)
-                    if(isZero) {
-                        if(bits.get(i)) {
-                            decoded.add((byte)1);
-                        } else {
-                            decoded.add((byte)0);
-                        }
-                        charCodeArea = false;
-                        isZero = false;
-                        byteSuffix.clear();
-                        count = 0;
-                        continue;
-                    }
-                    if(count > -1) {
-                        if(bits.get(i)) {
-                            byteSuffix.set(count);
-                        }
-
-                        if(count == 0) {
-                            // valorChar = int(binario)
-                            byte[] converted = byteSuffix.toByteArray();
-                            decoded.add(converted[0]);
-                            count = 0;
-                            charCodeArea = false;
-                            byteSuffix.clear();
-                            continue;
-                        }
-                        count--;
-                    }
+        while (index < contentCharArray.length) {
+            if (!alreadyFoundStopBit) {
+                if ((contentCharArray[index] - '0') == STOP_BIT) {
+                    alreadyFoundStopBit = true;
                 } else {
-                    if(!bits.get(i)) {
-                        count ++;
-                    } else {
-                        // le 1
-                        charCodeArea = true;
-                        if(count == 0) {
-                            isZero = true;
-                        }
-                    }
+                    prefixLength++;
                 }
+            } else {
+                String restInBinary = "";
+                restInBinary += contentCharArray[index];
+                for (int i = 1; i < prefixLength; i++) {
+                    ++index;
+                    int nextChar = Integer.parseInt(Character.toString(contentCharArray[index]));
+                    restInBinary += nextChar;
+                }
+
+                int rest = Integer.parseInt(restInBinary, 2);
+                char finalNumber = (char) ((int) Math.pow(2, prefixLength) + rest);
+                result += finalNumber;
+                prefixLength = 0;
+                alreadyFoundStopBit = false;
             }
+            ++index;
         }
-
-        byte[] decodedBytes = new byte[decoded.size()];
-        for (int i = 0; i < decodedBytes.length; i++) {
-            int ascii = decoded.get(i);
-            decodedBytes[i] = (byte)ascii;
-        }
-
-        //return decodedBytes;
-        String byteToString = new String(decodedBytes, StandardCharsets.UTF_8);
-        return byteToString;
+        return result;
     }
 
-    private void addHeaderValues(ArrayList<Byte> resultBytes){
-        resultBytes.add((byte) 1);
-        resultBytes.add((byte) 0);
+    public static String createStreamOnZeros(int howManyZeros) {
+        return new String(new char[howManyZeros]).replace("\0", "0");
     }
 }
