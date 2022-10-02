@@ -154,6 +154,7 @@ public class Window extends javax.swing.JFrame {
         function.setEnabled(false);
         run.setEnabled(false);
         try {
+            if(inputJson.getText().isEmpty()) throw new Exception();
             if(function.getItemAt(function.getSelectedIndex()) == "Encoder") {
                 writer = new Writer(fileChooser.getSelectedFile().getPath(), inputJson.getText(),
                         algorithm.getItemAt(algorithm.getSelectedIndex()).toString(),

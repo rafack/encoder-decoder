@@ -1,4 +1,5 @@
 com\Encoder_Decoder\Golomb.class
+com\Encoder_Decoder\Utils.class
 com\Encoder_Decoder\Window$3.class
 com\Encoder_Decoder\Unaria.class
 com\Encoder_Decoder\Writer.class
