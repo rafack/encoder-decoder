@@ -108,6 +108,11 @@ public class Writer {
                 fw.write(printBinary(result, " | "));
                 fw.close();
             }
+            else if(end == "Decoded.txt") {
+                FileWriter fw = new FileWriter(finalFilePath);
+                fw.write(result);
+                fw.close();
+            }
             else {
                 FileOutputStream fw = new FileOutputStream(finalFilePath);
                 write8bitsOrConcatZerosToComplete(fw, result);
@@ -129,40 +134,32 @@ public class Writer {
     }
     private void write8bitsOrConcatZerosToComplete(FileOutputStream fw, String bytes) throws IOException {
         int resto = (bytes.length() % LENGTH_OF_BITS_IN_A_BYTE);
-        //System.out.println(resto);
         int divisorMenosResto = LENGTH_OF_BITS_IN_A_BYTE - resto;
-        //System.out.println(divisorMenosResto);
         if (resto != 0) {
             for (int i = 0; i < divisorMenosResto; i++) {
                 bytes = bytes.concat("0");
             }
         }
         fw.write(toByteArray(bytes));
-        if (divisorMenosResto != LENGTH_OF_BITS_IN_A_BYTE) {
-            fw.write(toByteArray(Utils.integerToStringBinary(divisorMenosResto, LENGTH_OF_BITS_IN_A_BYTE)));
-        }
     }
     private static byte convertBitsToByte(String bits) {
-        System.out.println("bits " + bits);
         return (byte) Integer.parseInt(bits, 2);
     }
     private static String convertByteToBits(byte bytes) {
         int i = Byte.toUnsignedInt(bytes);
         return Utils.integerToStringBinary(i,LENGTH_OF_BITS_IN_A_BYTE);
     }
-    private static byte[] toByteArray(String input) {
-        //System.out.println(input);
+    private static
+    byte[] toByteArray(String input) {
         List<String> codewardsSplit = new ArrayList<>();
         int index = 0;
         while (index < input.length()) {
             codewardsSplit.add(input.substring(index, Math.min(index + LENGTH_OF_BITS_IN_A_BYTE, input.length())));
             index += LENGTH_OF_BITS_IN_A_BYTE;
         }
-        //System.out.println(codewardsSplit.get(0));
         byte[] bitMontados = new byte[codewardsSplit.size()];
         for (int i = 0; i < codewardsSplit.size(); i++) {
             bitMontados[i] = convertBitsToByte(codewardsSplit.get(i));
-            //System.out.println("bitMontados[i] " + bitMontados[i]);
         }
         return bitMontados;
     }
@@ -182,7 +179,10 @@ public class Writer {
         else if(codewardsSplit.get(0).equals(Utils.integerToStringBinary(3, 8))) this.algorithm = "Unária";
         else if(codewardsSplit.get(0).equals(Utils.integerToStringBinary(4, 8))) this.algorithm = "Delta";
 
-       this.k = Integer.toString(Integer.parseInt(codewardsSplit.get(1), 2));
-       this.content = content.substring(LENGTH_OF_BITS_IN_A_BYTE*2, content.length());
+        this.k = Integer.toString(Integer.parseInt(codewardsSplit.get(1), 2));
+        System.out.println(algorithm);
+        System.out.println(k);
+        this.content = result.substring(LENGTH_OF_BITS_IN_A_BYTE*2, result.length());
+        System.out.println(content);
     }
 }

@@ -10,7 +10,6 @@ public class Golomb {
     public Golomb(String content, int k) {
         this.content = content;
         this.k = k;
-        System.out.println(content);
     }
 
     public String encode(){
@@ -37,10 +36,8 @@ public class Golomb {
         int quocient = 0;
         int index = 0;
         char[] contentCharArray = content.toCharArray();
-        System.out.println(contentCharArray);
 
-        while (contentCharArray[index] != 65535) {
-            System.out.println(contentCharArray[index]);
+        while (index < contentCharArray.length) {
             if (!alreadyFoundStopBit) {
                 if ((contentCharArray[index] - '0') == STOP_BIT) {
                     alreadyFoundStopBit = true;
@@ -53,7 +50,7 @@ public class Golomb {
                 for (int i = 1; i < digitsOnRest; i++) {
                     ++index;
                     int nextChar = Integer.parseInt(Character.toString(contentCharArray[index]));
-                    restInBinary += nextChar - '0';
+                    restInBinary += nextChar;
                 }
                 int rest = Integer.parseInt(restInBinary, 2);
                 result += (char) ((quocient * this.k) + rest);

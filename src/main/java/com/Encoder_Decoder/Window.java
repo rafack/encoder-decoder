@@ -178,11 +178,11 @@ public class Window extends javax.swing.JFrame {
         }
         else {
             newFilePath = writer.decode();
-            algorithm.setEnabled(false);
-            k.setEnabled(false);
-            file.setEnabled(false);
-            function.setEnabled(false);
-            run.setEnabled(false);
+            algorithm.setEnabled(true);
+            k.setEnabled(true);
+            file.setEnabled(true);
+            function.setEnabled(true);
+            run.setEnabled(true);
             readFileFromEncoding(newFilePath);
         }
     }
@@ -192,6 +192,9 @@ public class Window extends javax.swing.JFrame {
             File file = fileChooser.getSelectedFile();
             try {
                 inputJson.setText(FileUtils.readFileToString(file));
+                String path = fileChooser.getSelectedFile().getPath();
+                if(path.substring(path.length()-4,path.length()).equals(".cod")) function.setSelectedIndex(1);
+                else if(path.substring(path.length()-4,path.length()).equals(".txt")) function.setSelectedIndex(0);
             } catch (IOException ex) {
                 Logger.getLogger(Window.class.getName()).log(Level.SEVERE, null, ex);
             }
@@ -201,6 +204,8 @@ public class Window extends javax.swing.JFrame {
         File file = new File(path);
         try {
             inputJson.setText(FileUtils.readFileToString(file));
+            if(path.substring(path.length()-4,path.length()).equals(".cod")) function.setSelectedIndex(1);
+            else if(path.substring(path.length()-4,path.length()).equals(".txt")) function.setSelectedIndex(0);
         } catch (IOException ex) {
             Logger.getLogger(Window.class.getName()).log(Level.SEVERE, null, ex);
         }
