@@ -1,15 +1,10 @@
 package com.Encoder_Decoder;
 
 import java.io.*;
-import java.math.BigInteger;
 import java.util.*;
 import java.util.stream.*;
-import java.text.*;
-import java.nio.charset.StandardCharsets;
-import com.Encoder_Decoder.Utils;
-import sun.nio.cs.UTF_8;
 
-public class Writer {
+public class Handler {
 
     private String filePath;
     private String content;
@@ -20,8 +15,9 @@ public class Writer {
     private String header;
     private String zerosAdded;
     public static final int LENGTH_OF_BITS_IN_A_BYTE = 8;
+    private byte[] finalCompressed;
 
-    public Writer(String filePath, String content, String algorithm, String k) {
+    public Handler(String filePath, String content, String algorithm, String k) {
         this.filePath = filePath;
         this.content = content;
         this.algorithm = algorithm;
@@ -40,7 +36,7 @@ public class Writer {
                 //output
                 writeFile("_debug.txt", true);
                 writeFile(".cod", true);
-                return finalFilePath;
+                return NoiseHandler.addNoiseHandler(finalFilePath, finalCompressed);
             case "Elias-Gamma":
                 //Header
                 header = Utils.integerToStringBinary(1, 8);
@@ -51,7 +47,7 @@ public class Writer {
                 //output
                 writeFile("_debug.txt", true);
                 writeFile(".cod", true);
-                return finalFilePath;
+                return NoiseHandler.addNoiseHandler(finalFilePath, finalCompressed);
             case "Fibonacci":
                 //Header
                 header = Utils.integerToStringBinary(2, 8);
@@ -62,7 +58,7 @@ public class Writer {
                 //output
                 writeFile("_debug.txt", true);
                 writeFile(".cod", true);
-                return finalFilePath;
+                return NoiseHandler.addNoiseHandler(finalFilePath, finalCompressed);
             case "Unária":
                 //Header
                 header = Utils.integerToStringBinary(3, 8);
@@ -73,7 +69,7 @@ public class Writer {
                 //output
                 writeFile("_debug.txt", true);
                 writeFile(".cod", true);
-                return finalFilePath;
+                return NoiseHandler.addNoiseHandler(finalFilePath, finalCompressed);
             case "Delta":
                 //Header
                 header = Utils.integerToStringBinary(4, 8);
@@ -84,7 +80,7 @@ public class Writer {
                 //output
                 writeFile("_debug.txt", true);
                 writeFile(".cod", true);
-                return finalFilePath;
+                return NoiseHandler.addNoiseHandler(finalFilePath, finalCompressed);
         }
         return "";
     }
@@ -176,7 +172,9 @@ public class Writer {
                 bytes = bytes.concat("0");
             }
         }
-        fw.write(toByteArray(bytes));
+        finalCompressed = toByteArray(bytes);
+
+        fw.write(finalCompressed);
     }
     private static byte convertBitsToByte(String bits) {
         return (byte) Integer.parseInt(bits, 2);
@@ -203,7 +201,7 @@ public class Writer {
         System.out.println("findAlgorithm");
         List<String> codewardsSplit = new ArrayList<>();
         String result = "";
-        byte[] temp = content.getBytes();
+        byte[] temp = NoiseHandler.removeNoiseHandler(content.getBytes());
         for (int i = 0; i < temp.length; i++) {
             codewardsSplit.add(convertByteToBits(temp[i]));
             result += convertByteToBits(temp[i]);
@@ -223,11 +221,7 @@ public class Writer {
             this.algorithm = "Delta";
             this.zerosAdded = Integer.toString(Integer.parseInt(codewardsSplit.get(1), 2));
         }
-
         System.out.println(algorithm);
-        System.out.println(k);
-        System.out.println(zerosAdded);
         this.content = result.substring(LENGTH_OF_BITS_IN_A_BYTE*2, result.length());
-        System.out.println(content);
     }
 }

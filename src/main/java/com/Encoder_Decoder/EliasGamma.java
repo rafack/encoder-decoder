@@ -1,8 +1,5 @@
 package com.Encoder_Decoder;
 
-import java.util.*;
-import com.Encoder_Decoder.Utils;
-
 public class EliasGamma {
     private static final byte STOP_BIT = 1;
     private String content;

@@ -1,13 +1,10 @@
 package com.Encoder_Decoder;
 
-import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.swing.JFileChooser;
-import javax.swing.table.DefaultTableModel;
 import org.apache.commons.io.FileUtils;
 
 
@@ -23,7 +20,7 @@ public class Window extends javax.swing.JFrame {
     private javax.swing.JScrollPane scrollFile;
     private javax.swing.JTextField k;
 
-    private Writer writer;
+    private Handler handler;
     private Algorithms algorithms;
 
     public Window() {
@@ -156,12 +153,12 @@ public class Window extends javax.swing.JFrame {
         try {
             if(inputJson.getText().isEmpty()) throw new Exception();
             if(function.getItemAt(function.getSelectedIndex()) == "Encoder") {
-                writer = new Writer(fileChooser.getSelectedFile().getPath(), inputJson.getText(),
+                handler = new Handler(fileChooser.getSelectedFile().getPath(), inputJson.getText(),
                         algorithm.getItemAt(algorithm.getSelectedIndex()).toString(),
                         k.getText());
             }
             else{
-                writer = new Writer(fileChooser.getSelectedFile().getPath(), inputJson.getText(),
+                handler = new Handler(fileChooser.getSelectedFile().getPath(), inputJson.getText(),
                         "","");
             }
         } catch (Exception e) {
@@ -169,7 +166,7 @@ public class Window extends javax.swing.JFrame {
         }
         String newFilePath;
         if(function.getItemAt(function.getSelectedIndex()) == "Encoder") {
-            newFilePath = writer.encode();
+            newFilePath = handler.encode();
             file.setEnabled(true);
             function.setSelectedIndex(1);
             function.setEnabled(true);
@@ -177,7 +174,7 @@ public class Window extends javax.swing.JFrame {
             readFileFromEncoding(newFilePath);
         }
         else {
-            newFilePath = writer.decode();
+            newFilePath = handler.decode();
             algorithm.setEnabled(true);
             k.setEnabled(true);
             file.setEnabled(true);

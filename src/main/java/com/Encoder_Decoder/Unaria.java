@@ -1,10 +1,7 @@
 package com.Encoder_Decoder;
 
-import com.Encoder_Decoder.Utils;
-
 public class Unaria {
     private String content;
-
     public Unaria(String content) {
         this.content = content;
     }

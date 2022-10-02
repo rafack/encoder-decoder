@@ -1,7 +1,5 @@
 package com.Encoder_Decoder;
 
-import com.Encoder_Decoder.Utils;
-
 public class Fibonacci {
     private String content;
     private int[] fibonacci_sequence;

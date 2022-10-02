@@ -1,7 +1,5 @@
 package com.Encoder_Decoder;
 
-import com.Encoder_Decoder.Utils;
-
 public class Golomb {
     private static final byte STOP_BIT = 1;
     private String content;
