@@ -1,97 +1,52 @@
 package com.Encoder_Decoder;
 
-import java.io.UnsupportedEncodingException;
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.BitSet;
+import com.Encoder_Decoder.Utils;
 
 public class Unaria {
-    private byte[] content;
+    private String content;
 
-    public Unaria(byte[] content) {
+    public Unaria(String content) {
         this.content = content;
     }
 
     public String encode(){
-        ArrayList<Byte> resultBytes = new ArrayList<>();
-        byte resultByte = 0;
-        int bitPosition = 0;
-        int aux;
-
-        addValuesInHeader(resultBytes);
-
-        for(byte b : content) {
-            if(b<0){
-                aux=256+b;
-            } else{
-                aux=b;
+        String result = "";
+        int bit = 0;
+        for (char character: content.toCharArray()) {
+            String codeword = "";
+            if (bit == 0) {
+                codeword = Utils.createStreamOnZeros(character);
+                bit = 1;
+            } else {
+                codeword = Utils.createStreamOnOnes(character);
+                bit = 0;
             }
-
-            for(int i = 0; i < aux; i++) {
-                if (bitPosition >= 8) {
-                    resultBytes.add(resultByte);
-                    resultByte = 0;
-                    bitPosition = 0;
-                }
-
-                bitPosition++;
-            }
-
-            if (bitPosition >= 8) {
-                resultBytes.add(resultByte);
-                resultByte = 0;
-                bitPosition = 0;
-            }
-
-            int valToShift = 7-bitPosition;
-            resultByte = (byte) (resultByte | (1<<valToShift));
-            bitPosition++;
+            result += codeword;
         }
-
-        if (bitPosition > 0) {
-            resultBytes.add(resultByte);
-        }
-
-        byte[] result = new byte[resultBytes.size()];
-        if(result != null && result.length > 0) {
-            for (int i = 0; i < result.length; i++) {
-                result[i] = resultBytes.get(i);
-            }
-        }
-
-        String byteToString = new String(result, StandardCharsets.UTF_8);
-        return byteToString;
+        return result;
     }
 
-    public String decode() {
-        ArrayList<Byte> decoded = new ArrayList<>();
-        int count = 0;
+    public String decode(int zerosAdded) {
+        String result = "";
+        int counter = 1;
+        int index = 0;
+        char[] contentCharArray = content.toCharArray();
+        int last = contentCharArray[index];
+        ++index;
 
-        for(int index = 2; index < content.length; index++) {
-            BitSet bits = BitSet.valueOf(new long[] { content[index] });
-
-            for(int i = 7; i >= 0; i--){
-                if(!bits.get(i)){
-                    count ++;
-                } else {
-                    decoded.add((byte)count);
-                    count = 0;
-                }
+        while (index < contentCharArray.length) {
+            if (contentCharArray[index] != last) {
+                char character = (char) counter;
+                result += character;
+                last = contentCharArray[index];
+                counter = 1;
+            } else {
+                counter++;
             }
+            ++index;
         }
-
-        byte[] decodedBytes = new byte[decoded.size()];
-        for (int i = 0; i < decodedBytes.length; i++) {
-            int ascii = decoded.get(i);
-            decodedBytes[i] = (byte)ascii;
-        }
-
-        String byteToString = new String(decodedBytes, StandardCharsets.UTF_8);
-        return byteToString;
-    }
-
-    private void addValuesInHeader(ArrayList<Byte> resultBytes){
-        resultBytes.add((byte) 3);
-        resultBytes.add((byte) 0);
+        char character = (char) (counter - zerosAdded);
+        result += character;
+        return result;
     }
 }

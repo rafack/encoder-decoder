@@ -1,6 +1,7 @@
 package com.Encoder_Decoder;
 
 import java.util.*;
+import com.Encoder_Decoder.Utils;
 
 public class EliasGamma {
     private static final byte STOP_BIT = 1;
@@ -12,15 +13,13 @@ public class EliasGamma {
 
     public String encode(){
         String result = "";
-        int index = 0;
-        char[] contentCharArray = content.toCharArray();
 
         for (char character: content.toCharArray()) {
             if (character == 1) {
                 result += STOP_BIT;
             } else {
                 int unaryNumber = Utils.calculateLog2(character);
-                String unaryString = createStreamOnZeros(unaryNumber);
+                String unaryString = Utils.createStreamOnZeros(unaryNumber);
                 int rest = (int) (character - (Math.pow(2, unaryNumber)));
 
                 String restInBinary = Utils.integerToStringBinary(rest, unaryNumber);
@@ -64,9 +63,5 @@ public class EliasGamma {
             ++index;
         }
         return result;
-    }
-
-    public static String createStreamOnZeros(int howManyZeros) {
-        return new String(new char[howManyZeros]).replace("\0", "0");
     }
 }

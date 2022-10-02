@@ -18,6 +18,7 @@ public class Writer {
     private String finalContent;
     private String finalFilePath;
     private String header;
+    private String zerosAdded;
     public static final int LENGTH_OF_BITS_IN_A_BYTE = 8;
 
     public Writer(String filePath, String content, String algorithm, String k) {
@@ -52,18 +53,36 @@ public class Writer {
                 writeFile(".cod", true);
                 return finalFilePath;
             case "Fibonacci":
-                //Fibonacci fibonacci = new Fibonacci(content);
-               // finalContent = fibonacci.encode();
+                //Header
+                header = Utils.integerToStringBinary(2, 8);
+                header += Utils.integerToStringBinary(0, 8);
+                //encode
+                Fibonacci fibonacci = new Fibonacci(content);
+                finalContent = fibonacci.encode();
+                //output
+                writeFile("_debug.txt", true);
                 writeFile(".cod", true);
                 return finalFilePath;
             case "Unária":
-                //Unaria unaria = new Unaria(content);
-                //finalContent = unaria.encode();
+                //Header
+                header = Utils.integerToStringBinary(3, 8);
+                header += Utils.integerToStringBinary(0, 8);
+                //encode
+                Unaria unaria = new Unaria(content);
+                finalContent = unaria.encode();
+                //output
+                writeFile("_debug.txt", true);
                 writeFile(".cod", true);
                 return finalFilePath;
             case "Delta":
-                //Delta delta = new Delta(content);
-                //finalContent = delta.encode();
+                //Header
+                header = Utils.integerToStringBinary(4, 8);
+                header += Utils.integerToStringBinary(0, 8);
+                //encode
+                Delta delta = new Delta(content);
+                finalContent = delta.encode();
+                //output
+                writeFile("_debug.txt", true);
                 writeFile(".cod", true);
                 return finalFilePath;
         }
@@ -88,18 +107,24 @@ public class Writer {
                 writeFile("Decoded.txt", false);
                 return finalFilePath;
             case "Fibonacci":
-                //Fibonacci fibonacci = new Fibonacci(content);
-                //finalContent = fibonacci.decode();
+                //decode
+                Fibonacci fibonacci = new Fibonacci(content);
+                finalContent = fibonacci.decode();
+                //output
                 writeFile("Decoded.txt", false);
                 return finalFilePath;
             case "Unária":
-                //Unaria unaria = new Unaria(content);
-                //finalContent = unaria.decode();
+                //decode
+                Unaria unaria = new Unaria(content);
+                finalContent = unaria.decode(Integer.parseInt(zerosAdded));
+                //output
                 writeFile("Decoded.txt", false);
                 return finalFilePath;
             case "Delta":
-                //Delta delta = new Delta(content);
-                //finalContent = delta.decode();
+                //decode
+                Delta delta = new Delta(content);
+                finalContent = delta.decode(Integer.parseInt(zerosAdded));
+                //output
                 writeFile("Decoded.txt", false);
                 return finalFilePath;
         }
@@ -143,6 +168,9 @@ public class Writer {
     private void write8bitsOrConcatZerosToComplete(FileOutputStream fw, String bytes) throws IOException {
         int resto = (bytes.length() % LENGTH_OF_BITS_IN_A_BYTE);
         int divisorMenosResto = LENGTH_OF_BITS_IN_A_BYTE - resto;
+        if(!bytes.substring(0,8).equals(Utils.integerToStringBinary(0, 8))){
+            bytes = bytes.substring(0,8) + Utils.integerToStringBinary(divisorMenosResto, 8) + bytes.substring(16, bytes.length());
+        }
         if (resto != 0) {
             for (int i = 0; i < divisorMenosResto; i++) {
                 bytes = bytes.concat("0");
@@ -181,15 +209,24 @@ public class Writer {
             result += convertByteToBits(temp[i]);
         }
 
-        if(codewardsSplit.get(0).equals(Utils.integerToStringBinary(0, 8))) this.algorithm = "Golomb";
+        if(codewardsSplit.get(0).equals(Utils.integerToStringBinary(0, 8))){
+            this.algorithm = "Golomb";
+            this.k = Integer.toString(Integer.parseInt(codewardsSplit.get(1), 2));
+        }
         else if(codewardsSplit.get(0).equals(Utils.integerToStringBinary(1, 8))) this.algorithm = "Elias-Gamma";
         else if(codewardsSplit.get(0).equals(Utils.integerToStringBinary(2, 8))) this.algorithm = "Fibonacci";
-        else if(codewardsSplit.get(0).equals(Utils.integerToStringBinary(3, 8))) this.algorithm = "Unária";
-        else if(codewardsSplit.get(0).equals(Utils.integerToStringBinary(4, 8))) this.algorithm = "Delta";
+        else if(codewardsSplit.get(0).equals(Utils.integerToStringBinary(3, 8))){
+            this.algorithm = "Unária";
+            this.zerosAdded = Integer.toString(Integer.parseInt(codewardsSplit.get(1), 2));
+        }
+        else if(codewardsSplit.get(0).equals(Utils.integerToStringBinary(4, 8))){
+            this.algorithm = "Delta";
+            this.zerosAdded = Integer.toString(Integer.parseInt(codewardsSplit.get(1), 2));
+        }
 
-        this.k = Integer.toString(Integer.parseInt(codewardsSplit.get(1), 2));
         System.out.println(algorithm);
         System.out.println(k);
+        System.out.println(zerosAdded);
         this.content = result.substring(LENGTH_OF_BITS_IN_A_BYTE*2, result.length());
         System.out.println(content);
     }
