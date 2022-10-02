@@ -1,150 +1,65 @@
 package com.Encoder_Decoder;
 
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.BitSet;
+import com.Encoder_Decoder.Utils;
 
 public class Golomb {
+    private static final byte STOP_BIT = 1;
+    private String content;
+    private int k;
 
-    final int divisor;
-    final int suffixSize;
-    private byte[] content;
-    private String k;
-
-    public Golomb(byte[] content, String k, int divisor) {
+    public Golomb(String content, int k) {
         this.content = content;
         this.k = k;
-
-        this.divisor = divisor;
-        this.suffixSize = calculateLog2(divisor);
     }
 
     public String encode(){
-        ArrayList<Byte> resultBytes = new ArrayList<>();
-        byte resultByte = 0;
-        int bitPosition = 0;
+        String result = "";
 
-        int value, rest, valToShift, aux;
+        for (char character: content.toCharArray()) {
+            int restOfDivision = character % this.k;
+            int digitsToRepresentTheRest = Utils.calculateLog2(this.k);
+            String restBinary = Utils.integerToStringBinary(restOfDivision, digitsToRepresentTheRest);
 
-        addHeaderValues(resultBytes);
+            int division = character / this.k;
+            String zeros = new String(new char[division]).replace("\0", "0");
+            String codewards = zeros + STOP_BIT + restBinary;
 
-        for(byte b : content) {
-            if(b<0){
-                aux=256+b;
-            } else{
-                aux=b;
-            }
-
-            value = aux / divisor;
-            rest = aux - (value * divisor);
-
-            //add value size in zeroes
-            for(int i = 0; i < value; i++) {
-                if (bitPosition >= 8) {
-                    //byte is complete, add to array and start over
-                    resultBytes.add(resultByte);
-                    resultByte = 0;
-                    bitPosition = 0;
-                }
-                bitPosition++;
-            }
-
-            if (bitPosition >= 8) {
-                //byte is complete, add to array and start over
-                resultBytes.add(resultByte);
-                resultByte = 0;
-                bitPosition = 0;
-            }
-
-            //resultByte add stopbit (1)
-            valToShift = 7-bitPosition;
-            resultByte = (byte) (resultByte | (1<<valToShift));
-            bitPosition++;
-
-            //add rest in binary
-            BitSet bitsOfRest = BitSet.valueOf(new long[] { rest });
-            for(int i = suffixSize-1; i >= 0; i--){
-                if (bitPosition >= 8) {
-                    //byte is complete, add to array and start over
-                    resultBytes.add(resultByte);
-                    resultByte = 0;
-                    bitPosition = 0;
-                }
-
-                if(bitsOfRest.get(i)) {
-                    valToShift = 7-bitPosition;
-                    resultByte = (byte) (resultByte | (1<<valToShift));
-                }
-
-                bitPosition++;
-            }
+            result += codewards;
         }
-
-        if (bitPosition > 0) {
-            resultBytes.add(resultByte);
-        }
-
-        byte[] result = new byte[resultBytes.size()];
-        for (int i = 0; i < result.length; i++) {
-            result[i] = resultBytes.get(i);
-        }
-
-        //return result;
-        String byteToString = new String(result, StandardCharsets.UTF_8);
-        return byteToString;
+        return result;
     }
 
     public String decode(){
-        ArrayList<Byte> decoded = new ArrayList<>();
-        BitSet byteSuffix = new BitSet();
-        boolean binaryArea = false;
-        int countPrefix = 0;
-        int suffixSizeHelp = suffixSize;
-        int value, rest, result;
+        String result = "";
+        boolean alreadyFoundStopBit = false;
+        int digitsOnRest = Utils.calculateLog2(this.k);
+        int quocient = 0;
+        int index = 0;
+        char[] contentCharArray = content.toCharArray();
 
-        for(int index = 2; index < content.length; index++) {
-            BitSet bits = BitSet.valueOf(new long[] { content[index] });
-            for(int i = 7; i >= 0; i--){
-                if(!binaryArea) {
-                    if(!bits.get(i)){
-                        countPrefix++;
-                    } else {
-                        binaryArea = true;
-                    }
+        while (index < contentCharArray.length) {
+            if (!alreadyFoundStopBit) {
+                if ((contentCharArray[index] - '0') == STOP_BIT) {
+                    alreadyFoundStopBit = true;
                 } else {
-                    if(bits.get(i)) {
-                        byteSuffix.set(suffixSizeHelp - 1);
-                    }
-                    suffixSizeHelp--;
-                    if(suffixSizeHelp <= 0) {
-                        value = countPrefix * divisor;
-                        rest = !byteSuffix.isEmpty() ? byteSuffix.toByteArray()[0] : 0;
-                        result = value + rest;
-                        decoded.add((byte)result);
-                        countPrefix = 0;
-                        binaryArea = false;
-                        byteSuffix.clear();
-                        suffixSizeHelp = suffixSize;
-                    }
+                    quocient++;
                 }
+            } else {
+                String restInBinary = "";
+                restInBinary += contentCharArray[index];
+                for (int i = 1; i < digitsOnRest; i++) {
+                    ++index;
+                    int nextChar = Integer.parseInt(Character.toString(contentCharArray[index]));
+                    restInBinary += nextChar;
+                }
+                int rest = Integer.parseInt(restInBinary, 2);
+                result += (char) ((quocient * this.k) + rest);
+                quocient = 0;
+                alreadyFoundStopBit = false;
             }
+            ++index;
         }
-
-        byte[] decodedBytes = new byte[decoded.size()];
-        for (int i = 0; i < decodedBytes.length; i++) {
-            decodedBytes[i] = decoded.get(i);
-        }
-
-        String byteToString = new String(decodedBytes, StandardCharsets.UTF_8);
-        return byteToString;
+        return result;
     }
 
-    private int calculateLog2(int value){
-        return (int) (Math.log(value) / Math.log(2) + 1e-10);
-    }
-
-    private void addHeaderValues(ArrayList<Byte> resultBytes){
-        resultBytes.add((byte) 0);
-        resultBytes.add((byte) divisor);
-    }
 }

@@ -1,155 +1,86 @@
 package com.Encoder_Decoder;
 
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.Collections;
+import com.Encoder_Decoder.Utils;
 
 public class Fibonacci {
-    private byte[] content;
-    private final int zeroValue = 235;
+    private String content;
+    private int[] fibonacci_sequence;
 
-    public Fibonacci(byte[] content) {
+    public Fibonacci(String content) {
         this.content = content;
+        this.fibonacci_sequence = this.createStructureFibonacci();
     }
-
     public String encode(){
-        ArrayList<Byte> resultBytes = new ArrayList<>();
-        int totalBitsUsed = 0;
+        String result = "";
 
-        for (byte b : content) {
-            if (b == 0) {
-                b = (byte)zeroValue;
-            }
+        for (char character: content.toCharArray()) {
+            int n = character;
+            String binary = "1";
+            boolean isFirstOccurrence = false;
+            int necessaryLength = 0;
 
-            int value = Byte.toUnsignedInt(b);
-            int rest = value;
-            ArrayList<Integer> fibonacciNumbers = getFibonacciNumbersByValue(value);
-            fibonacciNumbers.sort(Collections.reverseOrder());
-            // totalBytes = round up (fibonacciNumbersSize + stop bit / number of bits)
-            totalBitsUsed += (fibonacciNumbers.size() + 1);
-            int totalBytes = (int) Math.ceil(totalBitsUsed / 8.00);
+            for (int i = this.fibonacci_sequence.length - 1; i >= 0; i--) {
+                if (n == 0) break;
 
-            //add empty bytes
-            while (resultBytes.size() < totalBytes) {
-                resultBytes.add((byte) 0);
-            }
-
-            int bytePosition = resultBytes.size() - 1;
-            byte resultByte = resultBytes.get(bytePosition);
-
-            int bitPosition = 8 - totalBitsUsed % 8;
-
-            if (bitPosition >= 8) {
-                bitPosition = 8 - bitPosition;
-            }
-
-            //start with stop bit (1)
-            resultByte = (byte) (resultByte | (1 << bitPosition));
-            bitPosition++;
-
-            int i = 0;
-            for (Integer fibonacciNumber : fibonacciNumbers) {
-                if (bitPosition >= 8) {
-                    resultBytes.set(bytePosition, resultByte);
-                    bytePosition--;
-                    bitPosition = 0;
-                    resultByte = resultBytes.get(Math.max(bytePosition, 0));
+                if (this.fibonacci_sequence[i] <= n) {
+                    if (necessaryLength == 0) {
+                        necessaryLength = i + 1;
+                    }
+                    binary = "1" + binary;
+                    n = n - this.fibonacci_sequence[i];
+                    isFirstOccurrence = true;
+                } else if (isFirstOccurrence) {
+                    binary = "0" + binary;
                 }
-
-                if (rest - fibonacciNumber >= 0) {
-                    rest -= fibonacciNumber;
-                    //resultByte add 1
-                    resultByte = (byte) (resultByte | (1 << bitPosition));
-                }
-
-                bitPosition++;
-                i++;
             }
 
-            resultBytes.set(bytePosition, resultByte);
+            for (int i = necessaryLength - (binary.length() - 1); i > 0; i--) {
+                binary = "0" + binary;
+            }
+            result += binary;
         }
-
-        byte[] result = new byte[resultBytes.size() + 2];
-
-        addHeaderValues(result);
-
-        for (int i = 2; i < result.length; i++) {
-            result[i] = resultBytes.get(i - 2);
-        }
-
-        String byteToString = new String(result, StandardCharsets.UTF_8);
-        return byteToString;
+        return result;
     }
-
     public String decode(){
-        ArrayList<Integer> decoded = new ArrayList<>();
-        int currentNumber = 1;
-        int nextNumber = 2;
+        String result = "";
+        String storedOccurrence = "";
+        char numberOne = Integer.toString(1).charAt(0);
+        int index = 0;
+        char[] contentCharArray = content.toCharArray();
 
-        int decodeValue = 0;
-
-        int bitPosition = 7;
-        for (int bytePosition = 2; bytePosition < content.length; ) {
-            boolean bit = (content[bytePosition] & (1 << bitPosition)) > 0;
-            boolean nextBit = !(bitPosition - 1 < 0 && bytePosition + 1 > content.length - 1) && (content[bitPosition - 1 < 0 ? (bytePosition + 1) : bytePosition] & (1 << (bitPosition - 1 < 0 ? 7 : (bitPosition - 1)))) > 0;
-
-            if (bit) {
-                decodeValue += currentNumber;
+        while (index < contentCharArray.length) {
+            char lastChar = storedOccurrence.length() > 0 ? storedOccurrence.charAt(storedOccurrence.length() - 1) : 0;
+            if (lastChar == numberOne && contentCharArray[index] == numberOne) {
+                int ascii = this.decodeStringFibonacci(storedOccurrence);
+                char teste = (char) ascii;
+                result += teste;
+                storedOccurrence = "";
+            } else {
+                storedOccurrence = storedOccurrence + contentCharArray[index];
             }
-
-            int temp = currentNumber;
-            currentNumber = nextNumber;
-            nextNumber = temp + nextNumber;
-
-            bitPosition--;
-
-            if (bit && nextBit) {
-                currentNumber = 1;
-                nextNumber = 2;
-                if (decodeValue == zeroValue) {
-                    decodeValue = 0;
-                }
-
-                decoded.add(decodeValue);
-                decodeValue = 0;
-                //pass stop bit
-                bitPosition--;
-            }
-
-            if (bitPosition < 0) {
-                bitPosition = 7 + bitPosition + 1;
-                bytePosition++;
-            }
+            ++index;
         }
-
-        byte[] decodedBytes = new byte[decoded.size()];
-        for (int i = 0; i < decodedBytes.length; i++) {
-            int ascii = decoded.get(i);
-            decodedBytes[i] = (byte)ascii;
-        }
-
-        String byteToString = new String(decodedBytes, StandardCharsets.UTF_8);
-        return byteToString;
+        return result;
     }
+    private int[] createStructureFibonacci() {
+        int[] structure = new int[12];
+        structure[0] = 1;
+        structure[1] = 2;
+        for (int i = 2; i < structure.length; i++) {
+            structure[i] = structure[i - 1] + structure[i - 2];
+        }
+        return structure;
+    }
+    private int decodeStringFibonacci(String codeword) {
+        char numberOne = Integer.toString(1).charAt(0);
+        int total = 0;
 
-    public ArrayList<Integer> getFibonacciNumbersByValue(int value) {
-        ArrayList<Integer> fibonacciNumbers = new ArrayList<>();
-        int currentNumber = 1;
-        int nextNumber = 2;
-        fibonacciNumbers.add(currentNumber);
-
-        while (nextNumber <= value) {
-            fibonacciNumbers.add(nextNumber);
-            int temp = currentNumber;
-            currentNumber = nextNumber;
-            nextNumber = temp + nextNumber;
+        for (int i = 0; i < this.fibonacci_sequence.length && i < codeword.length(); i++) {
+            if (codeword.charAt(i) == numberOne) {
+                total += this.fibonacci_sequence[i];
+            }
         }
 
-        return fibonacciNumbers;
-    }
-
-    private void addHeaderValues(byte[] result) {
-        result[0] = (byte) Algorithms.FIBONACCI.getIdentifier();
-        result[1] = (byte) 0;
+        return total;
     }
 }

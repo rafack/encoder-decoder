@@ -1,61 +1,122 @@
 package com.Encoder_Decoder;
 
-import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
+import java.util.*;
+import com.Encoder_Decoder.Utils;
 
 public class Delta {
-    private byte[] content;
+    private static final int QUANTITY_OF_DIGITS_SIZE = 5;
+    private static final int FIRST_BINARY_SIZE = 8;
+    private static final String CHANGED = "1";
+    private static final String NO_CHANGES = "0";
+    private static final char NEGATIVE = '1';
+    private static final char POSITIVE = '0';
+    private int biggestIncrease = 0;
+    private int biggestDecrease = 0;
+    private int quantOfDigits;
+    private String content;
 
-    public Delta(byte[] content) {
+    public Delta(String content) {
         this.content = content;
     }
 
-    public String encode(){
-        ArrayList<Byte> resultBytes = new ArrayList<>();
-        byte delta = 0;
-        int largestDelta = 0;
-        addHeaderValues(resultBytes);
+    public String encode() {
+        String result = "";
+        List<Integer> characters = new ArrayList<Integer>();
+        char[] contentCharArray = content.toCharArray();
+        int index = 0;
 
-        ArrayList<Byte> deltas = new ArrayList<>();
-
-        //descobre o delta de cada byte
-        for(int i = 0; i < content.length-1; i++){
-            delta = (byte) (content[i+1] - content[i]);
-            deltas.add(delta);
-
-            if (Math.abs(delta) > Math.abs(largestDelta)) largestDelta = delta;
-
-            if (i == 0) resultBytes.add(content[i]);
-        }
-
-        int byteLength = 0;
-
-        //tentativa de calcular o codeword de cada salto
-        for(int i = 0; i < deltas.size()-1; i++){
-            if (deltas.get(i) != deltas.get(i+1)){
-                byteLength = Integer.toBinaryString(deltas.get(i)).length();
-                delta = (byte) (deltas.get(i) | (1<<byteLength));
+        while (index < contentCharArray.length) {
+            int currentCharacter = contentCharArray[index];
+            characters.add(currentCharacter);
+            if(index+1 < contentCharArray.length){
+                int nextCharacter = contentCharArray[index+1];
+                updateBiggests(currentCharacter, nextCharacter);
             }
-            resultBytes.add((byte) (delta));
+            ++index;
+        }
+        int currentCharacter;
+
+        int biggest = Math.max(biggestDecrease, biggestIncrease);
+        this.quantOfDigits = (int) Math.ceil(Utils.logBase2ToDouble(biggest));
+
+        String quantityOfDigits = Utils.integerToStringBinary(this.quantOfDigits + 1, QUANTITY_OF_DIGITS_SIZE);
+        result += quantityOfDigits;
+
+        currentCharacter = characters.get(0);
+        String firstNumberInBinary = Utils.integerToStringBinary(currentCharacter, FIRST_BINARY_SIZE);
+
+        result += firstNumberInBinary;
+
+        for (int i = 1; i < characters.size(); i++) {
+            int nextCharacter = characters.get(i);
+
+            int difference = Math.abs(currentCharacter - nextCharacter);
+            String codeword = NO_CHANGES;
+            if (difference != 0) {
+                char signal = POSITIVE;
+                if (currentCharacter > nextCharacter) {
+                    signal = NEGATIVE;
+                }
+                codeword = CHANGED + signal + Utils.integerToStringBinary(difference - 1, this.quantOfDigits);
+            }
+            currentCharacter = nextCharacter;
+
+            result += codeword;
+        }
+        return result;
+    }
+    public String decode(int zerosAdded) {
+        String result = "";
+        content = content.substring(0,content.length() - zerosAdded);
+        char[] contentCharArray = content.toCharArray();
+
+        String quantOfDigitsString = getCodeword(0, QUANTITY_OF_DIGITS_SIZE);
+        this.quantOfDigits = Integer.parseInt(quantOfDigitsString, 2);
+
+        String firstNumberString = getCodeword(QUANTITY_OF_DIGITS_SIZE, FIRST_BINARY_SIZE);
+
+        char firstNumber = (char) Integer.parseInt(firstNumberString, 2);
+        char lastCharacter = firstNumber;
+        result += firstNumber;
+
+        int index = QUANTITY_OF_DIGITS_SIZE + FIRST_BINARY_SIZE;
+
+        while (index < contentCharArray.length) {
+            if (contentCharArray[index] != '0') {
+                String codeword = getCodeword(index+1, quantOfDigits);
+                lastCharacter = discoverCharacter(codeword, lastCharacter);
+            }
+            result += lastCharacter;
+            index += 3;
         }
 
-        byte[] result = new byte[resultBytes.size()];
-
-        for(int i = 0; i < result.length; i++) {
-            result[i] = resultBytes.get(i);
+        return result;
+    }
+    private void updateBiggests(int currentCharacter, int nextCharacter) {
+        int difference = Math.abs(currentCharacter - nextCharacter);
+        if (currentCharacter > nextCharacter) {
+            if (difference > biggestDecrease) {
+                biggestDecrease = difference;
+            }
+        } else if (currentCharacter < nextCharacter) {
+            if (difference > biggestIncrease) {
+                biggestIncrease = difference;
+            }
         }
-
-        String byteToString = new String(result, StandardCharsets.UTF_8);
-        return byteToString;
     }
-
-    public String decode(){
-        //Implementar
-        return "";
+    private char discoverCharacter(String codeword, char lastSimbol) {
+        char signal = codeword.charAt(0);
+        String restOfString = codeword.substring(1);
+        int difference = Integer.parseInt(restOfString, 2) + 1;
+        return signal == NEGATIVE ? (char) (lastSimbol - difference) : (char) (lastSimbol + difference);
     }
-
-    private void addHeaderValues(ArrayList<Byte> resultBytes){
-        resultBytes.add((byte) 4);
-        resultBytes.add((byte) 0);
+    private String getCodeword(int start, int quantity) {
+        char[] contentCharArray = content.toCharArray();
+        String codeword = "";
+        for (int i = start; i < start+quantity; i++) {
+            int nextChar = contentCharArray[i];
+            codeword += nextChar - '0';
+        }
+        return codeword;
     }
 }

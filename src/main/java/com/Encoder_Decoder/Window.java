@@ -3,8 +3,6 @@ package com.Encoder_Decoder;
 import java.awt.event.WindowEvent;
 import java.io.File;
 import java.io.IOException;
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -73,7 +71,7 @@ public class Window extends javax.swing.JFrame {
             }
         });
 
-        k.setText("0");
+        k.setText("2");
         algorithm.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 algorithmActionPerformed(evt);
@@ -156,18 +154,37 @@ public class Window extends javax.swing.JFrame {
         function.setEnabled(false);
         run.setEnabled(false);
         try {
-            Charset charset = StandardCharsets.UTF_16;
-            byte[] jsonStringToByte = inputJson.getText().getBytes(charset);
-
-            writer = new Writer(fileChooser.getSelectedFile().getPath(), jsonStringToByte,
-                    algorithm.getItemAt(algorithm.getSelectedIndex()).toString(),
-                    k.getText());
+            if(inputJson.getText().isEmpty()) throw new Exception();
+            if(function.getItemAt(function.getSelectedIndex()) == "Encoder") {
+                writer = new Writer(fileChooser.getSelectedFile().getPath(), inputJson.getText(),
+                        algorithm.getItemAt(algorithm.getSelectedIndex()).toString(),
+                        k.getText());
+            }
+            else{
+                writer = new Writer(fileChooser.getSelectedFile().getPath(), inputJson.getText(),
+                        "","");
+            }
         } catch (Exception e) {
             System.out.println("Verifique se a entrada está correta!");
         }
         String newFilePath;
-        if(function.getItemAt(function.getSelectedIndex()) == "Encoder") newFilePath = writer.encode();
-        else newFilePath = writer.decode();
+        if(function.getItemAt(function.getSelectedIndex()) == "Encoder") {
+            newFilePath = writer.encode();
+            file.setEnabled(true);
+            function.setSelectedIndex(1);
+            function.setEnabled(true);
+            run.setEnabled(true);
+            readFileFromEncoding(newFilePath);
+        }
+        else {
+            newFilePath = writer.decode();
+            algorithm.setEnabled(true);
+            k.setEnabled(true);
+            file.setEnabled(true);
+            function.setEnabled(true);
+            run.setEnabled(true);
+            readFileFromEncoding(newFilePath);
+        }
     }
     private void readFile(java.awt.event.ActionEvent evt) {
         int val = fileChooser.showOpenDialog(this);
@@ -175,9 +192,22 @@ public class Window extends javax.swing.JFrame {
             File file = fileChooser.getSelectedFile();
             try {
                 inputJson.setText(FileUtils.readFileToString(file));
+                String path = fileChooser.getSelectedFile().getPath();
+                if(path.substring(path.length()-4,path.length()).equals(".cod")) function.setSelectedIndex(1);
+                else if(path.substring(path.length()-4,path.length()).equals(".txt")) function.setSelectedIndex(0);
             } catch (IOException ex) {
                 Logger.getLogger(Window.class.getName()).log(Level.SEVERE, null, ex);
             }
+        }
+    }
+    private void readFileFromEncoding(String path) {
+        File file = new File(path);
+        try {
+            inputJson.setText(FileUtils.readFileToString(file));
+            if(path.substring(path.length()-4,path.length()).equals(".cod")) function.setSelectedIndex(1);
+            else if(path.substring(path.length()-4,path.length()).equals(".txt")) function.setSelectedIndex(0);
+        } catch (IOException ex) {
+            Logger.getLogger(Window.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
