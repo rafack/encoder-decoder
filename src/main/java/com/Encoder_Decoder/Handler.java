@@ -85,7 +85,7 @@ public class Handler {
         return "";
     }
 
-    public String decode(){
+    public String decode() throws Exception{
         findAlgorithm();
         switch(algorithm){
             case "Golomb":
@@ -129,8 +129,8 @@ public class Handler {
     private void writeFile(String end, Boolean hasHeader){
         finalFilePath = filePath.substring(0,filePath.length()-4) + end;
         String result = "";
-       if(hasHeader) result += header;//new String(new BigInteger(header,2).toByteArray(), StandardCharsets.US_ASCII);
-        result += finalContent;// new String(new BigInteger(finalContent,2).toByteArray(), StandardCharsets.US_ASCII);
+       if(hasHeader) result += header;
+        result += finalContent;
         try {
             if(end == "_debug.txt") {
                 FileWriter fw = new FileWriter(finalFilePath);
@@ -176,15 +176,7 @@ public class Handler {
 
         fw.write(finalCompressed);
     }
-    private static byte convertBitsToByte(String bits) {
-        return (byte) Integer.parseInt(bits, 2);
-    }
-    private static String convertByteToBits(byte bytes) {
-        int i = Byte.toUnsignedInt(bytes);
-        return Utils.integerToStringBinary(i,LENGTH_OF_BITS_IN_A_BYTE);
-    }
-    private static
-    byte[] toByteArray(String input) {
+    public static byte[] toByteArray(String input) {
         List<String> codewardsSplit = new ArrayList<>();
         int index = 0;
         while (index < input.length()) {
@@ -193,18 +185,18 @@ public class Handler {
         }
         byte[] bitMontados = new byte[codewardsSplit.size()];
         for (int i = 0; i < codewardsSplit.size(); i++) {
-            bitMontados[i] = convertBitsToByte(codewardsSplit.get(i));
+            bitMontados[i] = Utils.convertBitsToByte(codewardsSplit.get(i));
         }
         return bitMontados;
     }
-    private void findAlgorithm(){
+    private void findAlgorithm() throws Exception{
         System.out.println("findAlgorithm");
         List<String> codewardsSplit = new ArrayList<>();
         String result = "";
         byte[] temp = NoiseHandler.removeNoiseHandler(content.getBytes());
         for (int i = 0; i < temp.length; i++) {
-            codewardsSplit.add(convertByteToBits(temp[i]));
-            result += convertByteToBits(temp[i]);
+            codewardsSplit.add(Utils.convertByteToBits(temp[i]));
+            result += Utils.convertByteToBits(temp[i]);
         }
 
         if(codewardsSplit.get(0).equals(Utils.integerToStringBinary(0, 8))){
