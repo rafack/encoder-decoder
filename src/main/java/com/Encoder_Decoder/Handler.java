@@ -16,6 +16,7 @@ public class Handler {
     private String zerosAdded;
     public static final int LENGTH_OF_BITS_IN_A_BYTE = 8;
     private byte[] finalCompressed;
+    private Boolean debug = false;
 
     public Handler(String filePath, String content, String algorithm, String k) {
         this.filePath = filePath;
@@ -36,7 +37,7 @@ public class Handler {
                 //output
                 writeFile("_debug.txt", true);
                 writeFile(".cod", true);
-                return NoiseHandler.addNoiseHandler(finalFilePath, finalCompressed);
+                return NoiseHandler.addNoiseHandler(finalFilePath, finalCompressed, debug);
             case "Elias-Gamma":
                 //Header
                 header = Utils.integerToStringBinary(1, 8);
@@ -47,7 +48,7 @@ public class Handler {
                 //output
                 writeFile("_debug.txt", true);
                 writeFile(".cod", true);
-                return NoiseHandler.addNoiseHandler(finalFilePath, finalCompressed);
+                return NoiseHandler.addNoiseHandler(finalFilePath, finalCompressed, debug);
             case "Fibonacci":
                 //Header
                 header = Utils.integerToStringBinary(2, 8);
@@ -58,7 +59,7 @@ public class Handler {
                 //output
                 writeFile("_debug.txt", true);
                 writeFile(".cod", true);
-                return NoiseHandler.addNoiseHandler(finalFilePath, finalCompressed);
+                return NoiseHandler.addNoiseHandler(finalFilePath, finalCompressed, debug);
             case "Unária":
                 //Header
                 header = Utils.integerToStringBinary(3, 8);
@@ -69,7 +70,7 @@ public class Handler {
                 //output
                 writeFile("_debug.txt", true);
                 writeFile(".cod", true);
-                return NoiseHandler.addNoiseHandler(finalFilePath, finalCompressed);
+                return NoiseHandler.addNoiseHandler(finalFilePath, finalCompressed, debug);
             case "Delta":
                 //Header
                 header = Utils.integerToStringBinary(4, 8);
@@ -80,7 +81,7 @@ public class Handler {
                 //output
                 writeFile("_debug.txt", true);
                 writeFile(".cod", true);
-                return NoiseHandler.addNoiseHandler(finalFilePath, finalCompressed);
+                return NoiseHandler.addNoiseHandler(finalFilePath, finalCompressed, debug);
         }
         return "";
     }
@@ -132,25 +133,27 @@ public class Handler {
        if(hasHeader) result += header;
         result += finalContent;
         try {
-            if(end == "_debug.txt") {
+            if(end == "_debug.txt" && debug) {
                 FileWriter fw = new FileWriter(finalFilePath);
                 fw.write(printBinary(result, " | "));
                 fw.close();
+                System.out.println("Debug Created...");
             }
             else if(end == "Decoded.txt") {
                 FileWriter fw = new FileWriter(finalFilePath);
                 fw.write(result);
                 fw.close();
+                System.out.println("Decoded Created...");
             }
             else {
                 FileOutputStream fw = new FileOutputStream(finalFilePath);
                 write8bitsOrConcatZerosToComplete(fw, result);
                 fw.close();
+                System.out.println("Cod Created...");
             }
         } catch(Exception e) {System.out.println(e);}
-        System.out.println("Done...");
     }
-    private static String printBinary(String binary, String separator) {
+    public static String printBinary(String binary, String separator) {
 
         List<String> result = new ArrayList<>();
         int index = 0;
