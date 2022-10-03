@@ -16,6 +16,7 @@ public class Handler {
     private String zerosAdded;
     public static final int LENGTH_OF_BITS_IN_A_BYTE = 8;
     private byte[] finalCompressed;
+    private Boolean debug = false;
 
     public Handler(String filePath, String content, String algorithm, String k) {
         this.filePath = filePath;
@@ -36,7 +37,7 @@ public class Handler {
                 //output
                 writeFile("_debug.txt", true);
                 writeFile(".cod", true);
-                return NoiseHandler.addNoiseHandler(finalFilePath, finalCompressed);
+                return NoiseHandler.addNoiseHandler(finalFilePath, finalCompressed, debug);
             case "Elias-Gamma":
                 //Header
                 header = Utils.integerToStringBinary(1, 8);
@@ -47,7 +48,7 @@ public class Handler {
                 //output
                 writeFile("_debug.txt", true);
                 writeFile(".cod", true);
-                return NoiseHandler.addNoiseHandler(finalFilePath, finalCompressed);
+                return NoiseHandler.addNoiseHandler(finalFilePath, finalCompressed, debug);
             case "Fibonacci":
                 //Header
                 header = Utils.integerToStringBinary(2, 8);
@@ -58,7 +59,7 @@ public class Handler {
                 //output
                 writeFile("_debug.txt", true);
                 writeFile(".cod", true);
-                return NoiseHandler.addNoiseHandler(finalFilePath, finalCompressed);
+                return NoiseHandler.addNoiseHandler(finalFilePath, finalCompressed, debug);
             case "Unária":
                 //Header
                 header = Utils.integerToStringBinary(3, 8);
@@ -69,7 +70,7 @@ public class Handler {
                 //output
                 writeFile("_debug.txt", true);
                 writeFile(".cod", true);
-                return NoiseHandler.addNoiseHandler(finalFilePath, finalCompressed);
+                return NoiseHandler.addNoiseHandler(finalFilePath, finalCompressed, debug);
             case "Delta":
                 //Header
                 header = Utils.integerToStringBinary(4, 8);
@@ -80,12 +81,12 @@ public class Handler {
                 //output
                 writeFile("_debug.txt", true);
                 writeFile(".cod", true);
-                return NoiseHandler.addNoiseHandler(finalFilePath, finalCompressed);
+                return NoiseHandler.addNoiseHandler(finalFilePath, finalCompressed, debug);
         }
         return "";
     }
 
-    public String decode(){
+    public String decode() throws Exception{
         findAlgorithm();
         switch(algorithm){
             case "Golomb":
@@ -129,28 +130,30 @@ public class Handler {
     private void writeFile(String end, Boolean hasHeader){
         finalFilePath = filePath.substring(0,filePath.length()-4) + end;
         String result = "";
-       if(hasHeader) result += header;//new String(new BigInteger(header,2).toByteArray(), StandardCharsets.US_ASCII);
-        result += finalContent;// new String(new BigInteger(finalContent,2).toByteArray(), StandardCharsets.US_ASCII);
+       if(hasHeader) result += header;
+        result += finalContent;
         try {
-            if(end == "_debug.txt") {
+            if(end == "_debug.txt" && debug) {
                 FileWriter fw = new FileWriter(finalFilePath);
                 fw.write(printBinary(result, " | "));
                 fw.close();
+                System.out.println("Debug Created...");
             }
             else if(end == "Decoded.txt") {
                 FileWriter fw = new FileWriter(finalFilePath);
                 fw.write(result);
                 fw.close();
+                System.out.println("Decoded Created...");
             }
             else {
                 FileOutputStream fw = new FileOutputStream(finalFilePath);
                 write8bitsOrConcatZerosToComplete(fw, result);
                 fw.close();
+                System.out.println("Cod Created...");
             }
         } catch(Exception e) {System.out.println(e);}
-        System.out.println("Done...");
     }
-    private static String printBinary(String binary, String separator) {
+    public static String printBinary(String binary, String separator) {
 
         List<String> result = new ArrayList<>();
         int index = 0;
@@ -176,15 +179,7 @@ public class Handler {
 
         fw.write(finalCompressed);
     }
-    private static byte convertBitsToByte(String bits) {
-        return (byte) Integer.parseInt(bits, 2);
-    }
-    private static String convertByteToBits(byte bytes) {
-        int i = Byte.toUnsignedInt(bytes);
-        return Utils.integerToStringBinary(i,LENGTH_OF_BITS_IN_A_BYTE);
-    }
-    private static
-    byte[] toByteArray(String input) {
+    public static byte[] toByteArray(String input) {
         List<String> codewardsSplit = new ArrayList<>();
         int index = 0;
         while (index < input.length()) {
@@ -193,18 +188,25 @@ public class Handler {
         }
         byte[] bitMontados = new byte[codewardsSplit.size()];
         for (int i = 0; i < codewardsSplit.size(); i++) {
-            bitMontados[i] = convertBitsToByte(codewardsSplit.get(i));
+            bitMontados[i] = Utils.convertBitsToByte(codewardsSplit.get(i));
         }
         return bitMontados;
     }
-    private void findAlgorithm(){
+    private void findAlgorithm() throws Exception{
         System.out.println("findAlgorithm");
         List<String> codewardsSplit = new ArrayList<>();
         String result = "";
-        byte[] temp = NoiseHandler.removeNoiseHandler(content.getBytes());
+        byte[] temp;
+        temp = content.getBytes();
+
+        if(filePath.substring(filePath.length()-4,filePath.length()).equals(".ecc")){
+            System.out.println("Removendo tratamento de ruido");
+            temp = NoiseHandler.removeNoiseHandler(content.getBytes());
+        }
+
         for (int i = 0; i < temp.length; i++) {
-            codewardsSplit.add(convertByteToBits(temp[i]));
-            result += convertByteToBits(temp[i]);
+            codewardsSplit.add(Utils.convertByteToBits(temp[i]));
+            result += Utils.convertByteToBits(temp[i]);
         }
 
         if(codewardsSplit.get(0).equals(Utils.integerToStringBinary(0, 8))){

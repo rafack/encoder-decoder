@@ -1,6 +1,7 @@
 package com.Encoder_Decoder;
 
 public class Utils {
+    public static final int LENGTH_OF_BITS_IN_A_BYTE = 8;
     public static String integerToStringBinary(int integer, int finalLengthOfBinary) {
         String binary = Integer.toBinaryString(integer);
         while (binary.length() != finalLengthOfBinary) {
@@ -19,5 +20,12 @@ public class Utils {
     }
     public static double logBase2ToDouble(int logaritmando) {
         return logaritmando == 1 ? 1 : (Math.log10(logaritmando) / Math.log10(2));
+    }
+    public static byte convertBitsToByte(String bits) {
+        return (byte) Integer.parseInt(bits, 2);
+    }
+    public static String convertByteToBits(byte bytes) {
+        int i = Byte.toUnsignedInt(bytes);
+        return Utils.integerToStringBinary(i,LENGTH_OF_BITS_IN_A_BYTE);
     }
 }
