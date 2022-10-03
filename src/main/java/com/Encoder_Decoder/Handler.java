@@ -196,7 +196,14 @@ public class Handler {
         System.out.println("findAlgorithm");
         List<String> codewardsSplit = new ArrayList<>();
         String result = "";
-        byte[] temp = NoiseHandler.removeNoiseHandler(content.getBytes());
+        byte[] temp;
+        temp = content.getBytes();
+
+        if(filePath.substring(filePath.length()-4,filePath.length()).equals(".ecc")){
+            System.out.println("Removendo tratamento de ruido");
+            temp = NoiseHandler.removeNoiseHandler(content.getBytes());
+        }
+
         for (int i = 0; i < temp.length; i++) {
             codewardsSplit.add(Utils.convertByteToBits(temp[i]));
             result += Utils.convertByteToBits(temp[i]);

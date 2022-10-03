@@ -21,6 +21,7 @@ public class NoiseHandler {
         finalFilePathStored = finalFilePath;
         FileOutputStream fw;
         try {
+            System.out.println("Adicionando tratamento de ruido");
             fw = new FileOutputStream(finalFilePath);
             fw.write(addNoiseHandler(compressed));
             fw.close();

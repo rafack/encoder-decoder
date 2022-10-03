@@ -145,6 +145,7 @@ public class Window extends javax.swing.JFrame {
     }
 
     private void runActionPerformed(java.awt.event.ActionEvent evt) {
+        String newFilePath;
         algorithm.setEnabled(false);
         k.setEnabled(false);
         file.setEnabled(false);
@@ -161,7 +162,6 @@ public class Window extends javax.swing.JFrame {
                 handler = new Handler(fileChooser.getSelectedFile().getPath(), inputJson.getText(),
                         "","");
             }
-            String newFilePath;
             if(function.getItemAt(function.getSelectedIndex()) == "Encoder") {
                 newFilePath = handler.encode();
                 file.setEnabled(true);
@@ -200,6 +200,7 @@ public class Window extends javax.swing.JFrame {
     }
     private void readFileFromEncoding(String path) {
         File file = new File(path);
+        fileChooser.setSelectedFile(file);
         try {
             inputJson.setText(FileUtils.readFileToString(file));
             if(path.substring(path.length()-4,path.length()).equals(".cod")) function.setSelectedIndex(1);
